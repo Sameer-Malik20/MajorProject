@@ -144,12 +144,14 @@
     <div class="navbar-collapse" id="navbarNavAltMarkup">
       <div class="nav-profile">
         <a class="nav-link" href="/listings/new">Airbnb your home</a>
-        <% if(!currUser) { %>
-        <a class="nav-link" href="/signup"><b>Sign up</b></a>
-        <a class="nav-link" href="/login"><b>Log in</b></a>
-        <% } %> <% if(currUser) { %>
-        <a class="nav-link" href="/logout"><b>Log out</b></a>
+        <% if (!currUser) { %>
+          <a class="nav-link" href="/signup"><b>Sign up</b></a>
+          <a class="nav-link" href="/login"><b>Log in</b></a>
+        <% } else { %>
+          <p>Welcome, <%= currUser.name %>!</p>
+          <a class="nav-link" href="/logout">Logout</a>
         <% } %>
+        
       </div>
     </div>
   </div>

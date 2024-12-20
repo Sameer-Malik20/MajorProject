@@ -33,15 +33,6 @@ mongoose.connect(dbUrl)
   .catch((err) => console.error('Database connection error:', err));
 
 
-// Example in a route handler
-app.get('/', (req, res) => {
-    // Assuming you have a way to get the current user (e.g., from a session)
-    const currUser = req.session.user; 
-
-    res.render('index', { currUser }); 
-});
-
-
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({extended: true}));
@@ -81,6 +72,11 @@ app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
+
+app.use((req, res, next) => {
+    res.locals.currUser = req.user || null; // `req.user` from middleware like Passport.js
+    next();
+  });
 
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());

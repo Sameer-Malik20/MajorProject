@@ -35,19 +35,62 @@ module.exports.show = async (req,res) => {
     res.render("listings/show.ejs",{listing});
 }
 
-//create route
+
 module.exports.create = async (req, res, next) => {
-    let url = req.file.path;
-    let filename = req.file.filename;
-    const newListing = new Listing(req.body.listing);
-    newListing.owner = req.user._id;
-    newListing.image = { url, filename };
-    let savedListing = await newListing.save();
-    console.log(savedListing);
+    try {
+      console.log("Request Body:", req.body);
+      console.log("Uploaded File:", req.file);
+  
+      if (!req.file) {
+        console.log("No file uploaded");
+      }
+  
+      let url = req.file ? req.file.path : null;
+      let filename = req.file ? req.file.filename : null;
+  
+      // Ensure all necessary fields exist
+      if (!req.body.listing || !req.body.listing.title || !req.body.listing.price) {
+        console.log("Missing required fields in request body.");
+        req.flash("error", "Required fields are missing!");
+        return res.redirect("/listings/new");
+      }
+  
+      // Create new listing
+      const newListing = new Listing(req.body.listing);
+      newListing.owner = req.user._id;
+  
+      // Only add image if file exists
+      if (url && filename) {
+        newListing.image = { url, filename };
+      }
+  
+      // Save the listing
+      let savedListing = await newListing.save();
+      console.log("Saved Listing:", savedListing);
+  
+      req.flash("success", "New Listing Created");
+      res.redirect("/listings");
+    } catch (err) {
+      console.error("Error during listing creation:", err);
+      req.flash("error", "Something went wrong while creating the listing.");
+      res.redirect("/listings/new");
+    }
+  };
+  
+  
+//create route
+// module.exports.create = async (req, res, next) => {
+//     let url = req.file.path;
+//     let filename = req.file.filename;
+//     const newListing = new Listing(req.body.listing);
+//     newListing.owner = req.user._id;
+//     newListing.image = { url, filename };
+//     let savedListing = await newListing.save();
+//     console.log(savedListing);
     
-    req.flash("success", "New Listing Created");
-    res.redirect("/listings");
-}
+//     req.flash("success", "New Listing Created");
+//     res.redirect("/listings");
+// }
 
 //edit route
 module.exports.edit = async(req,res) => {

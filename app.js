@@ -15,21 +15,25 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
-const Listing = require("./models/listing");
 
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
-
+// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 const dbUrl = process.env.ATLASDB_URL;
 
-// const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/wonderlust';
+main()
+    .then(() => {
+    console.log("connected to DB");
+    })
+    .catch((err) => {
+        console.log(err);
+    })
 
-mongoose.connect(dbUrl)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('Database connection error:', err));
-
+async function main() {
+    await mongoose.connect(dbUrl);
+}
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -39,7 +43,7 @@ app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
 const store = MongoStore.create({
-    mongoUrl: uri,
+    mongoUrl: dbUrl,
     crypto: {
         secret: process.env.SECRET,
     },
@@ -51,7 +55,7 @@ store.on("error" , () => {
 });
 
 const sessionOptions = {
-   store,
+    store,
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
@@ -64,17 +68,15 @@ const sessionOptions = {
 // app.get("/", (req, res) => {
 //     res.send("Hi, I am root");
 // })
+
+
+
 app.use(session(sessionOptions));
 app.use(flash());
 
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
-
-app.use((req, res, next) => {
-    res.locals.currUser = req.user || null; // `req.user` from middleware like Passport.js
-    next();
-  });
 
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());

@@ -40,7 +40,11 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-
+app.use((req, res, next) => {
+    res.locals.currUser = req.user || null; // यदि यूजर लॉग इन है, तो req.user सेट होगी।
+    next();
+  });
+  
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({extended: true}));

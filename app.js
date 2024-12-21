@@ -34,6 +34,12 @@ main()
 async function main() {
     await mongoose.connect(dbUrl);
 }
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -103,6 +109,6 @@ app.use((err, req, res, next) => {
     // res.status(statusCode).send(message);
 });
 
-app.listen(8080, () => {
-    console.log("server is listening to port 8080");
-});
+// app.listen(8080, () => {
+//     console.log("server is listening to port 8080");
+// });

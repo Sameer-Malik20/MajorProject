@@ -23,17 +23,17 @@ const userRouter = require("./routes/user.js");
 // const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 const dbUrl = process.env.ATLASDB_URL;
 
-main()
-    .then(() => {
-    console.log("connected to DB");
-    })
-    .catch((err) => {
-        console.log(err);
-    })
+// main()
+//     .then(() => {
+//     console.log("connected to DB");
+//     })
+//     .catch((err) => {
+//         console.log(err);
+//     })
 
-async function main() {
-    await mongoose.connect(dbUrl);
-}
+// async function main() {
+//     await mongoose.connect(dbUrl);
+// }
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {

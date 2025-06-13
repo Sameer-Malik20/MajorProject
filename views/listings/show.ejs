@@ -137,11 +137,16 @@
 </div>
 
 <script>
-    var map = tt.map({
-      key: "CXAdrKgYL6BU2G5SRpynCOlGt37myxxB", // Replace this with your API key
-      container: "map", // ID of the HTML container for the map
-      center: [77.2090, 28.6139], // Longitude, Latitude for New Delhi
-      zoom: 12, // Adjust zoom level as needed
-    });
-  </script>
+  const lat = <%= lat %>;
+  const lng = <%= lng %>;
+
+  var map = tt.map({
+    key: "CXAdrKgYL6BU2G5SRpynCOlGt37myxxB",
+    container: "map",
+    center: [lng, lat],
+    zoom: 12,
+  });
+ 
+  var marker = new tt.Marker().setLngLat([longitude, latitude]).addTo(map);
+</script>
   

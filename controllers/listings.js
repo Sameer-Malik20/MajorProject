@@ -17,96 +17,70 @@ module.exports.new = (req,res) =>{
 }
 
 //show route
-module.exports.show = async (req,res) => {
-    let {id} = req.params;
-    const listing = await Listing.findById(id)
-    .populate({path:"reviews",
-    populate:{
-        path: "author",
-    },
-    }) 
+module.exports.show = async (req, res) => {
+  let { id } = req.params;
+  const listing = await Listing.findById(id)
+    .populate({
+      path: "reviews",
+      populate: { path: "author" },
+    })
     .populate("owner");
-    if(!listing){
-        req.flash("error", "Listing you request for does not exist");
-        res.redirect("/listings");
+
+  if (!listing) {
+    req.flash("error", "Listing you request for does not exist");
+    return res.redirect("/listings");
+  }
+
+  res.render("listings/show.ejs", {
+    listing,
+    mapToken: process.env.MAP_TOKEN,
+    lat: listing.latitude,
+    lng: listing.longitude,
+  });
+};
+
+module.exports.create = async (req, res, next) => {
+  let url = req.file.path;
+  let filename = req.file.filename;
+
+  const newListing = new Listing(req.body.listing);
+  newListing.owner = req.user._id;
+  newListing.image = { url, filename };
+
+  const location = req.body.listing.location;
+  try {
+    const geoRes = await axios.get(
+      `https://api.tomtom.com/search/2/geocode/${encodeURIComponent(
+        location
+      )}.json`,
+      {
+        params: {
+          key: "CXAdrKgYL6BU2G5SRpynCOlGt37myxxB",
+        },
+      }
+    );
+    console.log("Full Geocode Response:", geoRes.data);
+
+    const position = geoRes.data.results[0]?.position;
+
+    if (position) {
+      newListing.latitude = position.lat;
+      newListing.longitude = position.lon;
+      console.log("Latitude:", position.lat);
+      console.log("Longitude:", position.lon);
+    } else {
+      console.warn("No coordinates found for location:", location);
     }
+  } catch (err) {
+    console.error("Geocoding failed:", err);
+  }
 
-    
-    res.render("listings/show.ejs",{listing});
-}
+  const savedListing = await newListing.save();
+  console.log("Saved Listing with Geo:", savedListing);
 
-
-// module.exports.create = async (req, res, next) => {
-//     try {
-//       console.log("Request Body:", req.body);
-//       console.log("Uploaded File:", req.file);
-  
-//       if (!req.file) {
-//         console.log("No file uploaded");
-//       }
-  
-//       let url = req.file ? req.file.path : null;
-//       let filename = req.file ? req.file.filename : null;
-  
-//       // Ensure all necessary fields exist
-//       if (!req.body.listing || !req.body.listing.title || !req.body.listing.price) {
-//         console.log("Missing required fields in request body.");
-//         req.flash("error", "Required fields are missing!");
-//         return res.redirect("/listings/new");
-//       }
-  
-//       // Create new listing
-//       const newListing = new Listing(req.body.listing);
-//       newListing.owner = req.user._id;
-  
-//       // Only add image if file exists
-//       if (url && filename) {
-//         newListing.image = { url, filename };
-//       }
-  
-//       // Save the listing
-//       let savedListing = await newListing.save();
-//       console.log("Saved Listing:", savedListing);
-  
-//       req.flash("success", "New Listing Created");
-//       res.redirect("/listings");
-//     } catch (err) {
-//       console.error("Error during listing creation:", err);
-//       req.flash("error", "Something went wrong while creating the listing.");
-//       res.redirect("/listings/new");
-//     }
-//   };
-  
-  module.exports.create = async (req, res, next) => {
-    let url = req.file.path;
-    let filename = req.file.filename;
-    const newListing = new Listing(req.body.listing);
-    newListing.owner = req.user._id;
-    newListing.image = { url, filename };
-
-    // newListing.geometry = response.body.features[0].geometry;
-
-    let savedListing = await newListing.save();
-    console.log(savedListing);
-    req.flash("success", "New Listing Created");
-    res.redirect("/listings");
-}
-//create route
-// module.exports.create = async (req, res, next) => {
-//     let url = req.file.path;
-//     let filename = req.file.filename;
-//     console.log('Body:', req.body);
-// console.log('File:', req.file);
-
-//     const newListing = new Listing(req.body.listing);
-//     newListing.owner = req.user._id;
-//     newListing.image = { url, filename };
-//     let savedListing = await newListing.save();
-//     console.log(savedListing);
-    
-//     req.flash("success", "New Listing Created");
-//     res.redirect("/listings");
-// }
+  req.flash("success", "New Listing Created");
+  res.redirect("/listings");
+};
 
 //edit route
 module.exports.edit = async(req,res) => {
